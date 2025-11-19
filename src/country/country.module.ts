@@ -9,5 +9,6 @@ import { RestCountryModule } from '../restcountry/restcountry.module';
   imports: [TypeOrmModule.forFeature([CountryEntity]), RestCountryModule],
   providers: [CountryService],
   controllers: [CountryController],
+  exports: [CountryService],
 })
 export class CountryModule {}

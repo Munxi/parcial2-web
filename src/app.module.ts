@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CountryModule } from './country/country.module';
-import { TravelplansModule } from './travelplans/travelplans.module';
+import { TravelplanModule } from './travelplan/travelplan.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CountryEntity } from './country/country.entity';
-import { TravelPlansEntity } from './travelplans/travelplans.entity';
+import { TravelPlanEntity } from './travelplan/travelplan.entity';
 import { RestCountryService } from './restcountry/restcountry.service';
 import { RestCountryModule } from './restcountry/restcountry.module';
 import { HttpModule } from '@nestjs/axios';
@@ -13,7 +13,7 @@ import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [
     CountryModule,
-    TravelplansModule,
+    TravelplanModule,
     HttpModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -22,7 +22,7 @@ import { HttpModule } from '@nestjs/axios';
       username: 'postgres',
       password: '123',
       database: 'parcial2',
-      entities: [CountryEntity, TravelPlansEntity],
+      entities: [CountryEntity, TravelPlanEntity],
       synchronize: true,
     }),
     RestCountryModule,

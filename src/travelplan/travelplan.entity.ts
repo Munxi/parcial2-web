@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CountryEntity } from '../country/country.entity';
-@Entity('travelplans')
-export class TravelPlansEntity {
+@Entity('travelplan')
+export class TravelPlanEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -24,6 +24,9 @@ export class TravelPlansEntity {
   @Column()
   note: string;
 
+  @Column({ name: 'cca3_dest' })
+  cca3: string;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
@@ -32,5 +35,5 @@ export class TravelPlansEntity {
 
   @ManyToOne(() => CountryEntity)
   @JoinColumn({ name: 'cca3_dest' })
-  cca3_dest: CountryEntity;
+  country_dest: CountryEntity;
 }
