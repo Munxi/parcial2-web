@@ -6,8 +6,6 @@ import { TravelplanModule } from './travelplan/travelplan.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CountryEntity } from './country/country.entity';
 import { TravelPlanEntity } from './travelplan/travelplan.entity';
-import { RestCountryService } from './restcountry/restcountry.service';
-import { RestCountryModule } from './restcountry/restcountry.module';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
@@ -25,10 +23,8 @@ import { HttpModule } from '@nestjs/axios';
       entities: [CountryEntity, TravelPlanEntity],
       synchronize: true,
     }),
-    RestCountryModule,
   ],
   controllers: [AppController],
-  providers: [AppService, RestCountryService],
-  exports: [RestCountryService],
+  providers: [AppService],
 })
 export class AppModule {}

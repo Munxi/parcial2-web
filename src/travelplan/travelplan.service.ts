@@ -17,6 +17,7 @@ export class TravelPlanService {
   async findOne(id: string): Promise<TravelPlanEntity> {
     const travel = await this.travelRepository.findOne({
       where: { id },
+      relations: ['country_dest'],
     });
     if (!travel) {
       throw new NotFoundException(`Travel plan with id ${id} not found.`);

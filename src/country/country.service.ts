@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CountryEntity } from './country.entity';
 import { Repository } from 'typeorm';
-import { RestCountryService } from '../restcountry/restcountry.service';
+import { COUNTRY_INFO_PROVIDER } from './providers/country-info.provider';
+import type { CountryInfoProvider } from './providers/country-info.provider';
+import { plainToInstance } from 'class-transformer';
 
 export class CountryResponse {
   data: CountryEntity;
@@ -13,7 +15,8 @@ export class CountryService {
   constructor(
     @InjectRepository(CountryEntity)
     private readonly countryRepository: Repository<CountryEntity>,
-    private readonly restService: RestCountryService,
+    @Inject(COUNTRY_INFO_PROVIDER)
+    private readonly countryProvider: CountryInfoProvider,
   ) {}
   async findAll(): Promise<CountryEntity[]> {
     return await this.countryRepository.find();
@@ -22,22 +25,21 @@ export class CountryService {
     let country = await this.countryRepository.findOne({
       where: { cca3 },
     });
+    let source = 'database';
     if (!country) {
-      country = await this.restService.getCountryByAPI(cca3);
-      if (!country) {
+      const countryDTO = await this.countryProvider.getCountryByAPI(cca3);
+      if (!countryDTO) {
         throw new NotFoundException(
           `Could not find a country with code ${cca3}`,
         );
       }
+      country = plainToInstance(CountryEntity, countryDTO);
       country = await this.countryRepository.save(country);
-      return {
-        data: country,
-        source: 'api',
-      };
+      source = 'api';
     }
     return {
       data: country,
-      source: 'database',
+      source: source,
     };
   }
 }
