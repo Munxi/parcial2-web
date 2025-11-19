@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment*/
 /* eslint-disable @typescript-eslint/no-unsafe-member-access*/
 import { Injectable } from '@nestjs/common';
-import { CountryEntity } from './country.entity';
 import { HttpService } from '@nestjs/axios';
 import { plainToInstance } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
+import { CountryEntity } from '../country/country.entity';
 
 export class CountryDto {
   cca3: string;
@@ -17,7 +17,7 @@ export class CountryDto {
 }
 
 @Injectable()
-export class ApiProvider {
+export class RestCountryService {
   private readonly apiUrl = 'https://restcountries.com/v3.1/alpha/';
 
   constructor(private readonly httpService: HttpService) {}

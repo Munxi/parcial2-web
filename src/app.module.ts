@@ -6,11 +6,15 @@ import { TravelplansModule } from './travelplans/travelplans.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CountryEntity } from './country/country.entity';
 import { TravelPlansEntity } from './travelplans/travelplans.entity';
+import { RestCountryService } from './restcountry/restcountry.service';
+import { RestCountryModule } from './restcountry/restcountry.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     CountryModule,
     TravelplansModule,
+    HttpModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -21,8 +25,10 @@ import { TravelPlansEntity } from './travelplans/travelplans.entity';
       entities: [CountryEntity, TravelPlansEntity],
       synchronize: true,
     }),
+    RestCountryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RestCountryService],
+  exports: [RestCountryService],
 })
 export class AppModule {}
