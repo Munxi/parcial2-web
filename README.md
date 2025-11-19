@@ -1,98 +1,84 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+## Ejecución del proyecto
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+1. Clonar el repositorio y entrar en la carpeta del proyecto.
+2. Instalar dependencias:  
+   npm install
+3. Configurar la base de datos en app.module.ts. El proyecto usa Postgres en local, con host, puerto, usuario, contraseña y nombre de base según tu entorno. Asegúrate de que la instancia de Postgres esté levantada antes de arrancar la API.
+4. TypeORM está configurado con synchronize: true, por lo que las tablas se crean automáticamente a partir de las entidades Country y TravelPlans.
+5. Ejecutar la API:
+    - modo normal: npm run start
+    - modo desarrollo (watch): npm run start:dev
+6. La API escucha por defecto en el puerto 3000 (o en el definido en la variable de entorno PORT).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descripción de la API
 
-## Description
+La API expone dos módulos principales: Countries y TravelPlans.  
+El módulo Countries se encarga de gestionar la información de países. Permite consultar países por su código alfa-3 (cca3) y realiza una estrategia de “cacheo”: primero busca en la base de datos y, si no existe, consulta la API externa RestCountries y guarda el resultado.  
+El módulo TravelPlans gestiona planes de viaje. Cada plan contiene nombre, fechas, una nota y una referencia al país de destino mediante una relación ManyToOne hacia Country. Cuando se crea un nuevo plan de viaje, el servicio de TravelPlans delega en el módulo Countries la resolución y persistencia del país asociado.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Endpoints
 
-## Project setup
+Countries
+- GET /country  
+  Devuelve todos los países almacenados en la base de datos.
+- GET /country/:cca3  
+  Devuelve un país por su código alfa-3. En la implementación puede incluirse un campo adicional que indique si el dato proviene de la base de datos o de la API externa.  
+  Ejemplo: GET /country/FRA
 
-```bash
-$ npm install
-```
+TravelPlans
+- GET /travelplan  
+  Devuelve todos los planes de viaje junto con su país de destino.
+- GET /travelplan/:id  
+  Devuelve un plan de viaje por id, incluyendo la relación con Country.
+- POST /travelplan  
+  Cuerpo esperado (JSON):  
+  {  
+  "name": "Viaje a París",  
+  "start_date": "2025-12-01",  
+  "end_date": "2025-12-10",  
+  "note": "Vacaciones",  
+  "cca3": "FRA"  
+  }
 
-## Compile and run the project
+## Provider externo de países
 
-```bash
-# development
-$ npm run start
+El provider externo se implementa como un servicio que consume RestCountries usando HttpService de @nestjs/axios y firstValueFrom de rxjs. Este servicio define un método getCountryByAPI(cca3) que llama a la ruta /v3.1/alpha/{cca3}, limitando los campos con el parámetro fields (cca3, name, region, subregion, capital, population, flags).  
+La respuesta de RestCountries se mapea a un DTO interno que simplifica la estructura. Este provider se registra en el módulo de Countries usando un token de abstracción y se inyecta en CountryService. De esta manera, CountryService puede pedir información de un país sin acoplarse directamente a la API externa y decidir si debe persistir el resultado en la base de datos.
 
-# watch mode
-$ npm run start:dev
+## Modelo de datos
 
-# production mode
-$ npm run start:prod
-```
+Country (CountryEntity)
+- cca3: string (clave primaria, código alfa-3)
+- name: string
+- region: string
+- subregion: string
+- capital: string
+- population: number
+- flag: string (URL o código de bandera)
+- created_at: Date
 
-## Run tests
+TravelPlan (TravelPlansEntity)
+- id: uuid (clave primaria)
+- name: string
+- start_date: Date
+- end_date: Date
+- note: string
+- created_at: Date
+- cca3_dest: relación ManyToOne hacia CountryEntity usando la columna cca3_dest como clave foránea.  
+  Este modelo permite reutilizar registros de Country para múltiples planes de viaje que compartan el mismo destino.
 
-```bash
-# unit tests
-$ npm run test
+## Pruebas básicas sugeridas
 
-# e2e tests
-$ npm run test:e2e
+1. Consultar país no cacheado
+    - Asegurarse de que la tabla de países no contenga el código FRA.
+    - Hacer GET /country/FRA.
+    - Verificar que la respuesta corresponda a Francia y que el país quede guardado en la base de datos.
 
-# test coverage
-$ npm run test:cov
-```
+2. Consultar país cacheado
+    - Volver a hacer GET /country/FRA.
+    - Verificar que ahora la respuesta se obtenga desde la base de datos sin necesidad de llamar a RestCountries.
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+3. Crear plan de viaje
+    - Enviar POST /travelplan con un cuerpo que incluya un cca3 válido (por ejemplo FRA).
+    - Verificar que el plan se cree y que la relación con CountryEntity quede correctamente asociada.
+    - Consultar GET /travelplan para ver el listado de planes con su país de destino.  
