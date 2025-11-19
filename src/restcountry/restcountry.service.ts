@@ -22,7 +22,7 @@ export class RestCountryService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  async getCountryByAPI(cca3: string): Promise<CountryEntity> {
+  async getCountryByAPI(cca3: string): Promise<CountryEntity | null> {
     const country: CountryDto = {
       cca3: '',
       name: '',
@@ -48,7 +48,7 @@ export class RestCountryService {
       return plainToInstance(CountryEntity, country);
     } catch (error) {
       console.error(`Error fetching country data: ${error.message}`);
-      return Promise.reject(new Error('Could not fetch country data'));
+      return null;
     }
   }
 }
