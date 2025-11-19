@@ -8,7 +8,7 @@ import {
 @Entity('country')
 export class CountryEntity {
   @PrimaryColumn()
-  ciloc: string;
+  cca3: string;
 
   @Column()
   name: string;

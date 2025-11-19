@@ -5,6 +5,7 @@ import { CountryModule } from './country/country.module';
 import { TravelplansModule } from './travelplans/travelplans.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CountryEntity } from './country/country.entity';
+import { TravelPlansEntity } from './travelplans/travelplans.entity';
 
 @Module({
   imports: [
