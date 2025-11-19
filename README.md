@@ -1,5 +1,4 @@
-### Nombre: Mateo Rubio Hernández
-### Codigo: 202211504
+#### Nombre: Mateo Rubio Hernández, Codigo: 202211504
 
 ## Ejecución del proyecto
 
