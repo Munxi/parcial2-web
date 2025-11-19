@@ -1,9 +1,12 @@
+### Nombre: Mateo Rubio Hernández
+### Codigo: 202211504
+
 ## Ejecución del proyecto
 
 1. Clonar el repositorio y entrar en la carpeta del proyecto.
 2. Instalar dependencias:  
    npm install
-3. Configurar la base de datos en app.module.ts. El proyecto usa Postgres en local, con host, puerto, usuario, contraseña y nombre de base según tu entorno. Asegúrate de que la instancia de Postgres esté levantada antes de arrancar la API.
+3. Configurar la base de datos en app.module.ts. Actualmente está configurada a Postgres en local, host: localhost, puerto: 5432, usuario: postgres, contraseña: 123, base de datos: parcial2. Asegúrese de tener una instancia de Postgres corriendo con esos datos o modifíquelos según su entorno.
 4. TypeORM está configurado con synchronize: true, por lo que las tablas se crean automáticamente a partir de las entidades Country y TravelPlans.
 5. Ejecutar la API:
     - modo normal: npm run start
@@ -22,7 +25,7 @@ Countries
 - GET /country  
   Devuelve todos los países almacenados en la base de datos.
 - GET /country/:cca3  
-  Devuelve un país por su código alfa-3. En la implementación puede incluirse un campo adicional que indique si el dato proviene de la base de datos o de la API externa.  
+  Devuelve un país por su código alfa-3. El retorno incluye un campo adicional que indica si el dato proviene de la base de datos o de la API externa.  
   Ejemplo: GET /country/FRA
 
 TravelPlans
@@ -56,6 +59,7 @@ Country (CountryEntity)
 - population: number
 - flag: string (URL o código de bandera)
 - created_at: Date
+- updated_at: Date
 
 TravelPlan (TravelPlansEntity)
 - id: uuid (clave primaria)
@@ -65,7 +69,6 @@ TravelPlan (TravelPlansEntity)
 - note: string
 - created_at: Date
 - cca3_dest: relación ManyToOne hacia CountryEntity usando la columna cca3_dest como clave foránea.  
-  Este modelo permite reutilizar registros de Country para múltiples planes de viaje que compartan el mismo destino.
 
 ## Pruebas básicas sugeridas
 
@@ -81,4 +84,6 @@ TravelPlan (TravelPlansEntity)
 3. Crear plan de viaje
     - Enviar POST /travelplan con un cuerpo que incluya un cca3 válido (por ejemplo FRA).
     - Verificar que el plan se cree y que la relación con CountryEntity quede correctamente asociada.
-    - Consultar GET /travelplan para ver el listado de planes con su país de destino.  
+    - Consultar GET /travelplan para ver el listado de planes con su país de destino.
+    - Consultar GET /travelplan/:id para ver el solemente el plan asociado con ese id.  
+ 
