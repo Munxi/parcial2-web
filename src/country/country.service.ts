@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CountryEntity } from './country.entity';
 import { Repository } from 'typeorm';
@@ -41,5 +46,20 @@ export class CountryService {
       data: country,
       source: source,
     };
+  }
+  async delete(cca3: string) {
+    const country = await this.countryRepository.findOne({ where: { cca3 } });
+    if (!country) {
+      throw new NotFoundException(`Could not find a country with code ${cca3}`);
+    }
+    try {
+      await this.countryRepository.remove(country);
+    } catch (error) {
+      if (error.code === '23503') {
+        throw new ConflictException(
+          'Country cannot be deleted because it is a destination.',
+        );
+      }
+    }
   }
 }

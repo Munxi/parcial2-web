@@ -85,4 +85,31 @@ TravelPlan (TravelPlansEntity)
     - Verificar que el plan se cree y que la relación con CountryEntity quede correctamente asociada.
     - Consultar GET /travelplan para ver el listado de planes con su país de destino.
     - Consultar GET /travelplan/:id para ver el solemente el plan asociado con ese id.  
- 
+
+## Extensión de la API
+La API se extendió para que ahora imprima en logs las caracteristicas de cada petición. 
+Esto se hizo por medio de un middleware que sirve de intermediario entre el cliente y el controlador
+de forma global. GlobalMiddleware(el middleware implementado) implementa la clase NestMiddleware 
+que le provee de las funciones para registrar y obtener los datos de una request y su respuesta. 
+Luego de ello, imprime en logs, los datos obtenidos. El middleware es global debido a que en el módulo 
+principal de NestJS se especifico que era para todas las rutas.
+
+También se extendió para que eliminar los paises del caché estuviera protegido
+por un guard. Esto se hizo especificando en el @Delete del controlador del módulo 
+que se debía usar un guard para autorizar esa solicitud específica. Si dentro de los headers hay un token
+llamado "clave" y valor "salchipapa123", entonces el guard deja pasar la solicitud. En caso contrario,
+la bloquea.
+
+## Validación extensiones
+Para la ruta protegida autorizado DELETE /country/FRA
+headers: ["clave": "salchipapa123"]
+Para la ruta protegida denegado DELETE /country/FRA
+headers: ["clave": "salchipapa345"]
+Para la ruta protegida denegado DELETE /country/FRA
+headers: []
+
+Para el middleware: Haga cualquier solicitud mencionada 
+anteriormente y verifique que se imprime un log en la consola
+de donde está corriendo la aplicación. El log debería tener la estructura:
+
+[OUT] {"url":"/country/cca3","status":409,"durationMs":213,"method":"DELETE"}
