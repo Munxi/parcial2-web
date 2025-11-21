@@ -92,7 +92,7 @@ Esto se hizo por medio de un middleware que sirve de intermediario entre el clie
 de forma global. GlobalMiddleware(el middleware implementado) implementa la clase NestMiddleware 
 que le provee de las funciones para registrar y obtener los datos de una request y su respuesta. 
 Luego de ello, imprime en logs, los datos obtenidos. El middleware es global debido a que en el módulo 
-principal de NestJS se especifico que era para todas las rutas.
+principal de NestJS se especificó que era para todas las rutas.
 
 También se extendió para que eliminar los paises del caché estuviera protegido
 por un guard. Esto se hizo especificando en el @Delete del controlador del módulo 
